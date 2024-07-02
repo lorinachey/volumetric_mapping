@@ -36,7 +36,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 
+
 namespace volumetric_mapping {
+
+// TODO determine where these should go
+// Defining these here so that it is easy to change in testing
+const double DIFFUSION_PROB_HIT = 0.7;
+const double DIFFUSION_PROB_MISS = 0.05;
 
 OctomapManager::OctomapManager(const ros::NodeHandle& nh,
                                const ros::NodeHandle& nh_private)
@@ -210,6 +216,10 @@ void OctomapManager::subscribe() {
       "pointcloud", 40, &OctomapManager::insertPointcloudWithTf, this);
   free_pointcloud_sub_ = nh_.subscribe(
       "freespace_pointcloud", 40, &OctomapManager::insertFreePointcloudWithTf, this);
+  diffused_occ_pointcloud_sub_ = nh_.subscribe(
+      "diffused_occupied_pointcloud", 40, &OctomapManager::insertDiffusedOccupiedPointcloud, this);
+  diffused_unocc_pointcloud_sub_ = nh_.subscribe(
+      "diffused_occupied_pointcloud", 40, &OctomapManager::insertDiffusedUnoccupiedPointcloud, this);
   octomap_sub_ =
       nh_.subscribe("input_octomap", 10, &OctomapManager::octomapCallback, this);
 }
@@ -538,6 +548,19 @@ void OctomapManager::insertFreePointcloudWithTf(
     setFreePCL(*pointcloud, sensor_to_world);
   }
 }
+
+void OctomapManager::insertDiffusedOccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
+    ROS_INFO("Entered insertDiffusedOccupiedPointcloud Callback");
+
+    ROS_INFO("Exiting insertDiffusedOccupiedPointcloud Callback");
+}
+
+void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
+    ROS_INFO("Entered insertDiffusedUnoccupiedPointcloud Callback");
+
+    ROS_INFO("Exiting insertDiffusedUnoccupiedPointcloud Callback");
+}
+
 
 void OctomapManager::augmentFreeFrustum() {
   setFreeRays(tf_w2s_latest_);
