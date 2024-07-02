@@ -217,9 +217,9 @@ void OctomapManager::subscribe() {
   free_pointcloud_sub_ = nh_.subscribe(
       "freespace_pointcloud", 40, &OctomapManager::insertFreePointcloudWithTf, this);
   diffused_occ_pointcloud_sub_ = nh_.subscribe(
-      "diffused_occupied_pointcloud", 40, &OctomapManager::insertDiffusedOccupiedPointcloud, this);
+      "/D01/diff_occ_point_cloud", 40, &OctomapManager::insertDiffusedOccupiedPointcloud, this);
   diffused_unocc_pointcloud_sub_ = nh_.subscribe(
-      "diffused_occupied_pointcloud", 40, &OctomapManager::insertDiffusedUnoccupiedPointcloud, this);
+      "/D01/diff_unocc_point_cloud", 40, &OctomapManager::insertDiffusedUnoccupiedPointcloud, this);
   octomap_sub_ =
       nh_.subscribe("input_octomap", 10, &OctomapManager::octomapCallback, this);
 }
@@ -551,13 +551,55 @@ void OctomapManager::insertFreePointcloudWithTf(
 
 void OctomapManager::insertDiffusedOccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
     ROS_INFO("Entered insertDiffusedOccupiedPointcloud Callback");
+    // Use iterators to access points in PointCloud2
+    sensor_msgs::PointCloud2ConstIterator<float> iter_x(*pointcloud, "x");
+    sensor_msgs::PointCloud2ConstIterator<float> iter_y(*pointcloud, "y");
+    sensor_msgs::PointCloud2ConstIterator<float> iter_z(*pointcloud, "z");
 
+    for (; iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
+        octomap::point3d query(*iter_x, *iter_y, *iter_z);
+        octomap::OcTreeKey key = octree_->coordToKey(query);
+        octomap::OcTreeNode* baseNode = octree_->search(key);
+        if (baseNode == nullptr) {
+            // Create a new node to be added to the tree
+            baseNode = octree_->updateNode(key, true);
+            if (baseNode == nullptr) {
+                ROS_ERROR("Failed to create or cast to a RoughOcTreeNode.");
+                continue;
+            }
+            baseNode->setLogOdds(octomap::logodds(DIFFUSION_PROB_HIT));
+        } else {
+          baseNode->addValue(octomap::logodds(DIFFUSION_PROB_HIT));
+        }
+    }
+    octree_->expand();
     ROS_INFO("Exiting insertDiffusedOccupiedPointcloud Callback");
 }
 
 void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
     ROS_INFO("Entered insertDiffusedUnoccupiedPointcloud Callback");
+    // Use iterators to access points in PointCloud2
+    sensor_msgs::PointCloud2ConstIterator<float> iter_x(*pointcloud, "x");
+    sensor_msgs::PointCloud2ConstIterator<float> iter_y(*pointcloud, "y");
+    sensor_msgs::PointCloud2ConstIterator<float> iter_z(*pointcloud, "z");
 
+    for (; iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
+        octomap::point3d query(*iter_x, *iter_y, *iter_z);
+        octomap::OcTreeKey key = octree_->coordToKey(query);
+        octomap::OcTreeNode* baseNode = octree_->search(key);
+        if (baseNode == nullptr) {
+            // Create a new node to be added to the tree
+            baseNode = octree_->updateNode(key, true);
+            if (baseNode == nullptr) {
+                ROS_ERROR("Failed to create or cast to a RoughOcTreeNode.");
+                continue;
+            }
+            baseNode->setLogOdds(octomap::logodds(DIFFUSION_PROB_MISS));
+        } else {
+          baseNode->addValue(octomap::logodds(DIFFUSION_PROB_MISS));
+        }
+    }
+    octree_->expand();
     ROS_INFO("Exiting insertDiffusedUnoccupiedPointcloud Callback");
 }
 
