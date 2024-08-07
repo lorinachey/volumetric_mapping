@@ -49,6 +49,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pcl/conversions.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#include <sensor_msgs/point_cloud2_iterator.h>
+
 namespace volumetric_mapping {
 
 // An inherited class from OctomapWorld, which also handles the connection to
@@ -69,6 +71,10 @@ class OctomapManager : public OctomapWorld {
   void insertPointcloudWithTf(
       const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
   void insertFreePointcloudWithTf(
+    const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
+  void insertDiffusedOccupiedPointcloud(
+    const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
+  void insertDiffusedUnoccupiedPointcloud(
     const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
 
   // Input Octomap callback.
@@ -158,6 +164,10 @@ class OctomapManager : public OctomapWorld {
   ros::Subscriber pointcloud_sub_;
   ros::Subscriber free_pointcloud_sub_;
   ros::Subscriber octomap_sub_;
+
+  // Subscriptions for Diffusion Server
+  ros::Subscriber diffused_occ_pointcloud_sub_;
+  ros::Subscriber diffused_unocc_pointcloud_sub_;
 
   // Only used if use_tf_transforms_ set to false.
   ros::Subscriber transform_sub_;
