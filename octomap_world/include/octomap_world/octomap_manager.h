@@ -164,6 +164,11 @@ class OctomapManager : public OctomapWorld {
   ros::Subscriber pointcloud_sub_;
   ros::Subscriber free_pointcloud_sub_;
   ros::Subscriber octomap_sub_;
+  ros::Subscriber base_octomap_full_sub_;
+
+  // Subscriptions for Diffusion Server
+  ros::Subscriber diffused_occ_pointcloud_sub_;
+  ros::Subscriber diffused_unocc_pointcloud_sub_;
 
   // Subscriptions for Diffusion Server
   ros::Subscriber diffused_occ_pointcloud_sub_;
@@ -215,6 +220,9 @@ class OctomapManager : public OctomapWorld {
 
   Transformation tf_w2s_latest_;
 
+  // Used to track the points in the base octomap so we can differentiate between
+  // diffused points and non-diffused points
+  std::vector<Eigen::Vector3d> base_octomap_positions_;
 };
 
 }  // namespace volumetric_mapping
