@@ -220,8 +220,10 @@ void OctomapManager::subscribe() {
       "/D01/diff_occ_point_cloud", 40, &OctomapManager::insertDiffusedOccupiedPointcloud, this);
   diffused_unocc_pointcloud_sub_ = nh_.subscribe(
       "/D01/diff_unocc_point_cloud", 40, &OctomapManager::insertDiffusedUnoccupiedPointcloud, this);
-  octomap_sub_ =
-      nh_.subscribe("input_octomap", 10, &OctomapManager::octomapCallback, this);
+  octomap_sub_ = nh_.subscribe("input_octomap", 10, &OctomapManager::octomapCallback, this);  // from original code
+
+  // Added for SceneSense to keep track of the base octomap
+  base_octomap_full_sub_ = nh_.subscribe("/octomap_full", 10, &OctomapManager::baseOctomapFullCallback, this);
 }
 
 void OctomapManager::octomapCallback(const octomap_msgs::Octomap& msg) {
@@ -720,6 +722,39 @@ bool OctomapManager::lookupTransformQueue(const std::string& from_frame,
     }
   }
   return match_found;
+}
+
+void OctomapManager::baseOctomapFullCallback(const octomap_msgs::Octomap& msg) {
+  ROS_INFO("*** Base Octomap Callback entered:");
+  // Reset the vector
+  base_octomap_positions_.clear();
+
+  // Convert the message to an octomap::OcTree
+  octomap::AbstractOcTree* tree = octomap_msgs::fullMsgToMap(msg);
+  octomap::OcTree* octree = dynamic_cast<octomap::OcTree*>(tree);
+
+  // Adds every node from the octree to the base octomap vector
+  if (octree) {
+      for (octomap::OcTree::iterator it = octree->begin(), end = octree->end(); it != end; ++it) {
+          // Convert the octree node coordinate to Eigen::Vector3d and add it to the vector
+          base_octomap_positions_.emplace_back(it.getX(), it.getY(), it.getZ());
+      }
+  }
+  ROS_INFO("*** Base octomap positions vector size: %zu", base_octomap_positions_.size());
+  delete octree;  // Clean up the dynamically allocated octree
+  ROS_INFO("*** Exiting Base Octomap Callback!");
+}
+
+bool OctomapManager::isPointInBaseOctomap(Eigen::Vector3d& pos) {
+    // Iterate over the vector to check if pos is in base_octomap_positions_
+    for (const auto& base_pos : base_octomap_positions_) {
+        if (base_pos == pos) {
+            ROS_INFO("*** Point is in the base octree!");
+            return true;
+        }
+    }
+    ROS_INFO("*** Point is NOT in the base octree");
+    return false;
 }
 
 }  // namespace volumetric_mapping
