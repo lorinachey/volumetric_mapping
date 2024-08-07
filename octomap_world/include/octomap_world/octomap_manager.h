@@ -37,6 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <octomap_msgs/GetOctomap.h>
 #include <std_srvs/Empty.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/Float32MultiArray.h>
 #include <tf/transform_listener.h>
 #include <volumetric_msgs/GetChangedPoints.h>
 #include <volumetric_msgs/LoadMap.h>
@@ -44,7 +46,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <volumetric_msgs/SetBoxOccupancy.h>
 #include <volumetric_msgs/SetDisplayBounds.h>
 
+#include <pcl/conversions.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#include <sensor_msgs/point_cloud2_iterator.h>
 
 namespace volumetric_mapping {
 
@@ -65,6 +70,12 @@ class OctomapManager : public OctomapWorld {
       const stereo_msgs::DisparityImageConstPtr& disparity);
   void insertPointcloudWithTf(
       const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
+  void insertFreePointcloudWithTf(
+    const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
+  void insertDiffusedOccupiedPointcloud(
+    const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
+  void insertDiffusedUnoccupiedPointcloud(
+    const sensor_msgs::PointCloud2::ConstPtr& pointcloud);
 
   // Input Octomap callback.
   void octomapCallback(const octomap_msgs::Octomap& msg);
@@ -101,6 +112,12 @@ class OctomapManager : public OctomapWorld {
 
   void transformCallback(const geometry_msgs::TransformStamped& transform_msg);
 
+  void getScanStatus(
+    Eigen::Vector3d& pos, std::vector<Eigen::Vector3d>& multiray_endpoints,
+    std::vector<std::tuple<int, int, int>>& gain_log,
+    std::vector<std::pair<Eigen::Vector3d, CellStatus>>& voxel_log);
+
+  void augmentFreeFrustum();
  private:
   // Sets up subscriptions based on ROS node parameters.
   void setParametersFromROS();
@@ -120,7 +137,6 @@ class OctomapManager : public OctomapWorld {
                             const std::string& to_frame,
                             const ros::Time& timestamp,
                             Transformation* transform);
-
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
 
@@ -146,7 +162,12 @@ class OctomapManager : public OctomapWorld {
   ros::Subscriber left_info_sub_;
   ros::Subscriber right_info_sub_;
   ros::Subscriber pointcloud_sub_;
+  ros::Subscriber free_pointcloud_sub_;
   ros::Subscriber octomap_sub_;
+
+  // Subscriptions for Diffusion Server
+  ros::Subscriber diffused_occ_pointcloud_sub_;
+  ros::Subscriber diffused_unocc_pointcloud_sub_;
 
   // Only used if use_tf_transforms_ set to false.
   ros::Subscriber transform_sub_;
@@ -162,6 +183,8 @@ class OctomapManager : public OctomapWorld {
   // Publish markers for visualization.
   ros::Publisher occupied_nodes_pub_;
   ros::Publisher free_nodes_pub_;
+
+  ros::Publisher time_cost_pub_;
 
   // Services!
   ros::ServiceServer reset_map_service_;
@@ -189,6 +212,9 @@ class OctomapManager : public OctomapWorld {
 
   // Transform queue, used only when use_tf_transforms is false.
   std::deque<geometry_msgs::TransformStamped> transform_queue_;
+
+  Transformation tf_w2s_latest_;
+
 };
 
 }  // namespace volumetric_mapping
