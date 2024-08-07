@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "octomap_world/octomap_world.h"
 
 #include <octomap_msgs/GetOctomap.h>
+#include <octomap_msgs/conversions.h>
 #include <std_srvs/Empty.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float32MultiArray.h>
@@ -137,6 +138,10 @@ class OctomapManager : public OctomapWorld {
                             const std::string& to_frame,
                             const ros::Time& timestamp,
                             Transformation* transform);
+
+  bool isPointInBaseOctomap(Eigen::Vector3d& pos);
+  void baseOctomapFullCallback(const octomap_msgs::Octomap& msg);
+
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
 
@@ -165,10 +170,6 @@ class OctomapManager : public OctomapWorld {
   ros::Subscriber free_pointcloud_sub_;
   ros::Subscriber octomap_sub_;
   ros::Subscriber base_octomap_full_sub_;
-
-  // Subscriptions for Diffusion Server
-  ros::Subscriber diffused_occ_pointcloud_sub_;
-  ros::Subscriber diffused_unocc_pointcloud_sub_;
 
   // Subscriptions for Diffusion Server
   ros::Subscriber diffused_occ_pointcloud_sub_;
