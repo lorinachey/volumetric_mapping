@@ -550,11 +550,7 @@ void OctomapManager::insertFreePointcloudWithTf(
 }
 
 void OctomapManager::insertDiffusedOccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
-<<<<<<< HEAD
-    ROS_INFO("Entered insertDiffusedOccupiedPointcloud Callback");
-=======
     // ROS_INFO("Entered insertDiffusedOccupiedPointcloud Callback");
->>>>>>> eaa1d03 (Backup changes from the DO1 robot used to merge diffused voxels)
     // Use iterators to access points in PointCloud2
     sensor_msgs::PointCloud2ConstIterator<float> iter_x(*pointcloud, "x");
     sensor_msgs::PointCloud2ConstIterator<float> iter_y(*pointcloud, "y");
@@ -568,22 +564,6 @@ void OctomapManager::insertDiffusedOccupiedPointcloud(const sensor_msgs::PointCl
             // Create a new node to be added to the tree
             baseNode = octree_->updateNode(key, true);
             if (baseNode == nullptr) {
-<<<<<<< HEAD
-                ROS_ERROR("Failed to create or cast to a RoughOcTreeNode.");
-                continue;
-            }
-            baseNode->setLogOdds(octomap::logodds(DIFFUSION_PROB_HIT));
-        } else {
-          baseNode->addValue(octomap::logodds(DIFFUSION_PROB_HIT));
-        }
-    }
-    octree_->expand();
-    ROS_INFO("Exiting insertDiffusedOccupiedPointcloud Callback");
-}
-
-void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
-    ROS_INFO("Entered insertDiffusedUnoccupiedPointcloud Callback");
-=======
                 ROS_ERROR("Failed to create or cast to a OcTreeNode.");
                 continue;
             }
@@ -601,7 +581,6 @@ void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::Point
 
 void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::PointCloud2::ConstPtr& pointcloud) {
     // ROS_INFO("Entered insertDiffusedUnoccupiedPointcloud Callback");
->>>>>>> eaa1d03 (Backup changes from the DO1 robot used to merge diffused voxels)
     // Use iterators to access points in PointCloud2
     sensor_msgs::PointCloud2ConstIterator<float> iter_x(*pointcloud, "x");
     sensor_msgs::PointCloud2ConstIterator<float> iter_y(*pointcloud, "y");
@@ -615,21 +594,6 @@ void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::Point
             // Create a new node to be added to the tree
             baseNode = octree_->updateNode(key, true);
             if (baseNode == nullptr) {
-<<<<<<< HEAD
-                ROS_ERROR("Failed to create or cast to a RoughOcTreeNode.");
-                continue;
-            }
-            baseNode->setLogOdds(octomap::logodds(DIFFUSION_PROB_MISS));
-        } else {
-          baseNode->addValue(octomap::logodds(DIFFUSION_PROB_MISS));
-        }
-    }
-    octree_->expand();
-    ROS_INFO("Exiting insertDiffusedUnoccupiedPointcloud Callback");
-}
-
-
-=======
                 ROS_ERROR("Failed to create or cast to a OcTreeNode.");
                 continue;
             }
@@ -645,7 +609,6 @@ void OctomapManager::insertDiffusedUnoccupiedPointcloud(const sensor_msgs::Point
     // ROS_INFO("Exiting insertDiffusedUnoccupiedPointcloud Callback");
 }
 
->>>>>>> eaa1d03 (Backup changes from the DO1 robot used to merge diffused voxels)
 void OctomapManager::augmentFreeFrustum() {
   setFreeRays(tf_w2s_latest_);
 }
