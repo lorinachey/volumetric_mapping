@@ -724,7 +724,7 @@ bool OctomapManager::lookupTransformQueue(const std::string& from_frame,
 }
 
 void OctomapManager::baseOctomapFullCallback(const octomap_msgs::Octomap& msg) {
-  ROS_INFO("*** Base Octomap Callback entered:");
+  // ROS_INFO("*** Base Octomap Callback entered:");
   // Reset the vector
   base_octomap_positions_.clear();
 
@@ -739,9 +739,9 @@ void OctomapManager::baseOctomapFullCallback(const octomap_msgs::Octomap& msg) {
           base_octomap_positions_.emplace_back(it.getX(), it.getY(), it.getZ());
       }
   }
-  ROS_INFO("*** Base octomap positions vector size: %zu", base_octomap_positions_.size());
+  // ROS_INFO("*** Base octomap positions vector size: %zu", base_octomap_positions_.size());
   delete octree;  // Clean up the dynamically allocated octree
-  ROS_INFO("*** Exiting Base Octomap Callback!");
+  // ROS_INFO("*** Exiting Base Octomap Callback!");
 }
 
 bool OctomapManager::isPointInBaseOctomap(Eigen::Vector3d& pos) {
