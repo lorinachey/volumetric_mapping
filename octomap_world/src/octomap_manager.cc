@@ -734,26 +734,33 @@ void OctomapManager::baseOctomapFullCallback(const octomap_msgs::Octomap& msg) {
 
   // Adds every node from the octree to the base octomap vector
   if (octree) {
-      for (octomap::OcTree::iterator it = octree->begin(), end = octree->end(); it != end; ++it) {
-          // Convert the octree node coordinate to Eigen::Vector3d and add it to the vector
-          base_octomap_positions_.emplace_back(it.getX(), it.getY(), it.getZ());
-      }
+    octree->expand();
+    for (octomap::OcTree::iterator it = octree->begin(), end = octree->end(); it != end; ++it) {
+        // Convert the octree node coordinate to Eigen::Vector3d and add it to the vector
+        base_octomap_positions_.emplace_back(it.getX(), it.getY(), it.getZ());
+    }
   }
   // ROS_INFO("*** Base octomap positions vector size: %zu", base_octomap_positions_.size());
   delete octree;  // Clean up the dynamically allocated octree
   // ROS_INFO("*** Exiting Base Octomap Callback!");
 }
 
-bool OctomapManager::isPointInBaseOctomap(Eigen::Vector3d& pos) {
+bool OctomapManager::isPointInBaseOctomap(const Eigen::Vector3d& pos) {
     // Iterate over the vector to check if pos is in base_octomap_positions_
     for (const auto& base_pos : base_octomap_positions_) {
-        if (base_pos == pos) {
-            ROS_INFO("*** Point is in the base octree!");
-            return true;
-        }
+      // Print the vectors and the norm difference on the same line
+      // std::cout << "pos: [" << pos.transpose() << "] "
+      //           << "base_pos: [" << base_pos.transpose() << "] "
+      //           << "norm: " << (base_pos - pos).norm() << std::endl;
+      // std::cout<<"pos: "<<pos<<"base_pose "<<base_pos<<"norm: "<<(base_pos - pos).norm()<<std::endl;
+      if ((base_pos - pos).norm() < 0.1) {
+          // ROS_INFO("*** Point is in the base octree!");
+          return true;
+      }
     }
-    ROS_INFO("*** Point is NOT in the base octree");
+    // ROS_INFO("*** Point is NOT in the base octree");
     return false;
 }
+
 
 }  // namespace volumetric_mapping

@@ -119,6 +119,7 @@ class OctomapManager : public OctomapWorld {
     std::vector<std::pair<Eigen::Vector3d, CellStatus>>& voxel_log);
 
   void augmentFreeFrustum();
+  bool isPointInBaseOctomap(const Eigen::Vector3d& pos);
  private:
   // Sets up subscriptions based on ROS node parameters.
   void setParametersFromROS();
@@ -139,7 +140,6 @@ class OctomapManager : public OctomapWorld {
                             const ros::Time& timestamp,
                             Transformation* transform);
 
-  bool isPointInBaseOctomap(Eigen::Vector3d& pos);
   void baseOctomapFullCallback(const octomap_msgs::Octomap& msg);
 
   ros::NodeHandle nh_;
